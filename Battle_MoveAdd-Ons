@@ -1,0 +1,21 @@
+#===============================================================================
+# The Following Script is necessary to make some new moves function. This has
+# not been tested yet, so if you'd like to test it for me, feel free to do so
+# and please report back with the results.
+#===============================================================================
+class PokeBattle_Battle
+  def pbEndOfRoundPhase
+    priority.each do |b|
+      next if b.fainted? || b.effects[PBEffects::Trapping]==0
+      b.effects[PBEffects::Trapping] -= 1
+      moveName = GameData::Move.get(b.effects[PBEffects::TrappingMove]).name
+      if b.effects[PBEffects::Trapping]==0
+        pbDisplay(_INTL(""{1} was freed from {2}!"",b.pbThis,moveName))
+      else
+        case b.effects[PBEffects::TrappingMove]
+        when :BOMBARDBLAZE then pbCommonAnimation(""FireSpin"", b)
+        end
+      end
+    end
+  end
+end
