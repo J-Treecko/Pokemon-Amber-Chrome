@@ -1,0 +1,55 @@
+#===============================================================================
+# The Following Script is necessary to make some new moves function. These have
+# not been tested yet, so if you'd like to test them for me, feel free to do so
+# and please report back with the results.
+#===============================================================================
+# Type effectiveness is multiplied by the Steel-type's effectiveness against
+# the target. (Molten Wool)
+#===============================================================================
+class PokeBattle_Move_500 < PokeBattle_Move
+  def pbCalcTypeModSingle(moveType,defType,user,target)
+    ret = super
+    if GameData::Type.exists?(:STEEL)
+      steelEff = Effectiveness.calculate_one(:STEEL, defType)
+      ret *= steelEff.to_f / Effectiveness::NORMAL_EFFECTIVE_ONE
+    end
+    return ret
+  end
+end
+
+#===============================================================================
+# Evasion and Accuracy are each increased by 1 stage. (Lucky Gift)
+#===============================================================================
+class PokeBattle_Move_501 < PokeBattle_StatUpMove
+  def initialize(battle,move)
+    super
+    @statUp = [:EVASION,1,:ACCURACY,1]
+  end
+end
+
+#===============================================================================
+# Target's Evasion is decreased by 1 stage.
+#===============================================================================
+class PokeBattle_Move_502 < PokeBattle_TargetStatDownMove
+  def initialize(battle,move)
+    super
+    @statDown = [:EVASION,1]
+  end
+end
+
+#===============================================================================
+# Poison-type targets recover 1/4 maxHP. Otherwise, target's Speed is decreased
+# by 1 stage. (Fungal Spores)
+#===============================================================================
+class PokeBattle_Move_503 < PokeBattle_TargetStatDownMove
+  def initialize(battle,move)
+    if target.pbHasType?(:POISON)
+      return if @presentDmg>0
+      target.pbRecoverHP(target.totalhp/4)
+      @battle.pbDisplay(_INTL("{1}'s HP was restored.",target.pbThis))
+    else
+      super
+      @statDown = [:SPEED,1]
+    end
+  end
+end
